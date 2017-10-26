@@ -1,0 +1,47 @@
+<ion-header>
+    <ion-navbar>
+        <ion-title>
+            <img
+                src="../../assets/icon/logo.svg"
+                id="logo"
+            >
+        </ion-title>
+        <ion-buttons end>
+            <button
+                ion-button
+                icon-only
+                (click)="showSearch()"
+            >
+                <ion-icon name="add"></ion-icon>
+                Add Coins
+            </button>
+        </ion-buttons>
+    </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+
+    <ion-grid>
+        <ion-row>
+            <ion-col>
+                <span id="colname">Coin name</span>
+            </ion-col>
+            <ion-col>
+                <button
+                    ion-button
+                    icon-left
+                    clear
+                    (click)="refreshCoins()"
+                    id="refresh"
+                    color="light"
+                >
+                    <ion-icon name="refresh"></ion-icon>
+                    Refresh
+                </button>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+    <ion-list *ngIf="coins">
+        <ion-item *ngFor="let coin of objectKeys(coins)">{{coin}}</ion-item>
+    </ion-list>
+</ion-content>
