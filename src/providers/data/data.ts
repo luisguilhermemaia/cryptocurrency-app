@@ -5,34 +5,63 @@ import 'rxjs/add/operator/map';
 @Injectable()
 export class DataProvider {
 
-  result:any;
+  baseUrl: string = `https://min-api.cryptocompare.com/data`;
 
-  constructor(public _http: HttpClient) {
-    
+  constructor(private _http: HttpClient) {}
+
+  get(endpoint) {
+    return this._http.get(`${this.baseUrl}/${endpoint}`);
   }
 
   getCoins(coins) {
-    let coinlist = '';
-
-    coinlist = coins.join();
-
-    return this._http.get("https://min-api.cryptocompare.com/data/pricemulti?fsyms="+coinlist+"&tsyms=USD")
-      .map(result => this.result = result);
+    const endpoint = `pricemulti?fsyms=${coins.join()}&tsyms=USD,BRL`;
+    return this.get(endpoint)
+               .map(coins => this.extractCoins(coins));
   }
 
-  getCoin(coin) {
-    return this._http.get("https://min-api.cryptocompare.com/data/pricemultifull?fsyms="+coin+"&tsyms=USD")
-      .map(result => this.result = result);
+  private extractCoins(coins) {
+    let coinArray = []
+    Object.keys(coins).map(name => {
+        if(coins.hasOwnProperty(name)) {
+            let values = this.extractValues(coins[name]);
+            let coin = new Currency(name, values);
+            coinArray.push(coin);
+        }
+    });
+    return coinArray;
   }
 
-  getChart(coin) {
-    return this._http.get("https://min-api.cryptocompare.com/data/histoday?fsym="+coin+"&tsym=USD&limit=30&aggregate=1")
-    .map(result => this.result = result);
+  extractValues(rates) {
+    let currencies:CurrencyValue[] = [];
+    Object.keys(rates).map(currency => {
+        if(rates.hasOwnProperty(currency)) {
+            let value = new CurrencyValue(currency,rates[currency]);
+            currencies.push(value);
+        }
+    });
+    
+    return currencies;
+  }
+
+  getCoin(coin: string) {
+    const endpoint = `pricemultifull?fsyms=${coin}&tsyms=USD`;
+    return this.get(endpoint);
+  }
+
+  getChart(coin: string) {
+    return this.get(`histoday?fsym=${coin}&tsym=USD&limit=30&aggregate=1`);
   }
 
   allCoins() {
-      return this._http.get("../assets/mock/coins.json")
-        .map(result => this.result = result);
+    return this._http.get("../assets/mock/coins.json");
   }
 
+}
+
+export class Currency {
+  constructor(private name: string, private value: CurrencyValue[]) {}
+}
+
+export class CurrencyValue {
+  constructor(private name: string, private value: string) {}
 }
